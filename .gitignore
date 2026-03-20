@@ -1,0 +1,22 @@
+# Binaries
+vps-monitor
+vps-monitor-bot
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Environment variables
+.env
+
+# Dependencies
+vendor/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

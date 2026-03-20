@@ -2,6 +2,8 @@ package services
 
 import (
 	"fmt"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -110,4 +112,39 @@ func FormatStats(stats *SystemStats) string {
 	}
 
 	return msg
+}
+
+func GetTopProcesses() (string, error) {
+	cmd := "ps -eo pcpu,pmem,comm --sort=-pcpu --no-headers | head -n 5"
+	out, err := exec.Command("sh", "-c", cmd).Output()
+	if err != nil {
+		return "", err
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+	if len(lines) == 0 || (len(lines) == 1 && lines[0] == "") {
+		return "⚠️ Tidak ada data proses.", nil
+	}
+
+	var sb strings.Builder
+	sb.WriteString("```\n")
+	sb.WriteString(fmt.Sprintf("%-6s %-6s %-15s\n", "CPU", "MEM", "COMMAND"))
+	sb.WriteString(strings.Repeat("-", 30) + "\n")
+
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) >= 3 {
+			cpu := fields[0] + "%"
+			mem := fields[1] + "%"
+			comm := strings.Join(fields[2:], " ")
+
+			if len(comm) > 15 {
+				comm = comm[:12] + "..."
+			}
+			sb.WriteString(fmt.Sprintf("%-6s %-6s %-15s\n", cpu, mem, comm))
+		}
+	}
+	sb.WriteString("```")
+
+	return sb.String(), nil
 }

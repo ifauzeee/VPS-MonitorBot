@@ -87,9 +87,13 @@ func (h *CommandHandler) handleStatus(msg *tgbotapi.Message) {
 }
 
 func (h *CommandHandler) handleTopProcesses(msg *tgbotapi.Message) {
-	response := "🔧 *Top 5 Processes by CPU*\n\n" +
-		"Fitur ini memerlukan implementasi dengan `ps` command.\n" +
-		"Gunakan: `ps aux --sort=-%cpu | head -n 6`"
+	out, err := services.GetTopProcesses()
+	if err != nil {
+		h.Telegram.SendMessage(msg.Chat.ID, "❌ Error membaca data proses.")
+		return
+	}
+
+	response := "🔧 *Top 5 Processes by CPU*\n\n" + out
 	h.Telegram.SendMessage(msg.Chat.ID, response)
 }
 
